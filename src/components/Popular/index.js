@@ -9,6 +9,7 @@ const IMAGE_URL = 'https://image.tmdb.org/t/p/w500'
 class Popular extends Component {
   state = {
     movies: [],
+    currentPage: 1,
   }
 
   componentDidMount() {
@@ -16,9 +17,10 @@ class Popular extends Component {
   }
 
   getPopularMovies = async () => {
+    const {currentPage} = this.state
     try {
       const response = await fetch(
-        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=1`,
+        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=${currentPage}`,
       )
       const data = await response.json()
       this.setState({movies: data.results})
@@ -27,8 +29,32 @@ class Popular extends Component {
     }
   }
 
+  handleNext = () => {
+    this.setState(
+      prevState => ({currentPage: prevState.currentPage + 1}),
+      this.getPopularMovies,
+    )
+  }
+
+  handlePrev = () => {
+    this.setState(
+      prevState => {
+        if (prevState.currentPage > 1) {
+          return {currentPage: prevState.currentPage - 1}
+        }
+        return null
+      },
+      () => {
+        const {currentPage} = this.state
+        if (currentPage > 1) {
+          this.getPopularMovies()
+        }
+      },
+    )
+  }
+
   render() {
-    const {movies} = this.state
+    const {movies, currentPage} = this.state
 
     return (
       <>
@@ -48,6 +74,24 @@ class Popular extends Component {
               </Link>
             </div>
           ))}
+        </div>
+        <div className="pagination-container">
+          <button
+            type="button"
+            className="pagination-button"
+            onClick={this.handlePrev}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </button>
+          <p className="current-page">{currentPage}</p>
+          <button
+            type="button"
+            className="pagination-button"
+            onClick={this.handleNext}
+          >
+            Next
+          </button>
         </div>
       </>
     )

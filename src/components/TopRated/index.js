@@ -9,6 +9,7 @@ const IMAGE_URL = 'https://image.tmdb.org/t/p/w500'
 class TopRated extends Component {
   state = {
     topMovies: [],
+    currentPage: 1,
   }
 
   componentDidMount() {
@@ -16,9 +17,10 @@ class TopRated extends Component {
   }
 
   getTopRatedMovies = async () => {
+    const {currentPage} = this.state
     try {
       const response = await fetch(
-        `https://api.themoviedb.org/3/movie/top_rated?api_key=${API_KEY}&language=en-US&page=1`,
+        `https://api.themoviedb.org/3/movie/top_rated?api_key=${API_KEY}&language=en-US&page=${currentPage}`,
       )
       const data = await response.json()
       this.setState({topMovies: data.results})
@@ -27,8 +29,22 @@ class TopRated extends Component {
     }
   }
 
+  handleNext = () => {
+    this.setState(
+      prevState => ({currentPage: prevState.currentPage + 1}),
+      this.getTopRatedMovies,
+    )
+  }
+
+  handlePrev = () => {
+    this.setState(
+      prevState => ({currentPage: Math.max(prevState.currentPage - 1, 1)}),
+      this.getTopRatedMovies,
+    )
+  }
+
   render() {
-    const {topMovies} = this.state
+    const {topMovies, currentPage} = this.state
 
     return (
       <>
@@ -48,6 +64,24 @@ class TopRated extends Component {
               </Link>
             </div>
           ))}
+        </div>
+        <div className="pagination-controls">
+          <button
+            type="button"
+            className="pagination-button"
+            onClick={this.handlePrev}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </button>
+          <p className="page-number">{currentPage}</p>
+          <button
+            type="button"
+            className="pagination-button"
+            onClick={this.handleNext}
+          >
+            Next
+          </button>
         </div>
       </>
     )
